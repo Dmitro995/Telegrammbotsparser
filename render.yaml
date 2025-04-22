@@ -1,0 +1,9 @@
+services:
+  - type: worker
+    name: casino-trends-watcher
+    runtime: python
+    plan: free
+    repo: https://github.com/your/repo.git
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python trends_parser.py"
+    schedule: "@hourly"
