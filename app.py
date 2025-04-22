@@ -9,20 +9,16 @@ from telegram.ext import Dispatcher, CommandHandler, CallbackContext
 
 from trends_parser import run_parser
 
-# Logging
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO
 )
 
-# Bot token from env
 TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
+APP_URL = os.environ["APP_URL"].rstrip("/")
 bot = Bot(token=TOKEN)
 
-# Flask app
 app = Flask(__name__)
-
-# Dispatcher
 dispatcher = Dispatcher(bot, None, use_context=True)
 
 def check(update: Update, context: CallbackContext):
@@ -30,16 +26,17 @@ def check(update: Update, context: CallbackContext):
     bot.send_message(chat_id, "🔍 Checking for new trends...")
     new_items = run_parser()
     if new_items:
-        text = "🎰 New Casino Trends:
-" + "
-".join(f"- {{item}}" for item in new_items)
+        text = (
+            "🎰 New Casino Trends:\n"
+            + "\n".join(f"- {item}" for item in new_items)
+        )
     else:
         text = "No new trends found."
     bot.send_message(chat_id, text)
 
 dispatcher.add_handler(CommandHandler("check", check))
 
-@app.route(f"/webhook/{{TOKEN}}", methods=["POST"])
+@app.route(f"/webhook/{TOKEN}", methods=["POST"])
 def webhook():
     data = request.get_json(force=True)
     update = Update.de_json(data, bot)
@@ -47,7 +44,6 @@ def webhook():
     return "OK"
 
 if __name__ == "__main__":
-    APP_URL = os.environ["APP_URL"].rstrip("/")  # e.g. https://your-render-url
     webhook_url = f"{APP_URL}/webhook/{TOKEN}"
     bot.set_webhook(webhook_url)
     port = int(os.environ.get("PORT", 5000))
