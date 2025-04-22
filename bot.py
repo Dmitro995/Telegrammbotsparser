@@ -16,6 +16,8 @@ def check(update, context):
     new_items = run_parser()
     if new_items:
         message = "🎰 New Casino Trends:\n" + "\n".join(f"- {item}" for item in new_items)
+        message = message.replace("\n", "
+")
     else:
         message = "No new trends found."
     update.message.reply_text(message)

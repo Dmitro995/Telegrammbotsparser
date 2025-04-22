@@ -7,3 +7,10 @@ services:
     buildCommand: "pip install -r requirements.txt"
     startCommand: "python trends_parser.py"
     schedule: "@hourly"
+
+  - type: web
+    name: casino-trends-bot
+    runtime: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python bot.py"
