@@ -1,39 +1,24 @@
+
 from pytrends.request import TrendReq
-import json
+import random, time
 
-def run_parser(config_path="config.json", brands_path="brands.json"):
-    with open(config_path) as f:
-        config = json.load(f)
+def run_parser():
+    pytrends = TrendReq(hl='en-US', tz=330, backoff_factor=0.5,
+                        requests_args={'headers': {'User-Agent': 'Mozilla/5.0'}})
+    time.sleep(random.uniform(2, 5))  # Anti-ban delay
 
-    pytrends = TrendReq(hl='en-IN', tz=330)
-    keywords = config["keywords"]
-    geo = config.get("geo", "IN")
-    chat_id = config["telegram_chat_id"]
+    keywords = ["online casino", "casino app india", "teen patti", "real money game", "slot games"]
+    pytrends.build_payload(keywords, geo='IN', timeframe='now 7-d')
 
-    def load_history():
-        try:
-            with open(brands_path) as f:
-                return set(json.load(f))
-        except:
-            return set()
+    data = pytrends.related_queries()
+    results = []
 
-    def save_history(data):
-        with open(brands_path, "w") as f:
-            json.dump(sorted(list(data)), f)
+    for kw, queries in data.items():
+        if queries['rising'] is not None:
+            trends = queries['rising']['query'].tolist()
+            results.extend(trends)
 
-    history = load_history()
-    new_items = set()
-
-    for kw in keywords:
-        pytrends.build_payload([kw], geo=geo, timeframe='now 7-d')
-        related = pytrends.related_queries().get(kw, {}).get('rising', None)
-        if related is not None:
-            for query in related['query']:
-                q_lower = query.lower()
-                if any(x in q_lower for x in ['casino', 'bet', 'slot', 'rummy', 'teen']):
-                    if query not in history:
-                        new_items.add(query)
-                        history.add(query)
-
-    save_history(history)
-    return new_items
+    results = list(set(results))
+    if len(results) > 10:
+        results = results[:10]
+    return results

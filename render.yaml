@@ -1,16 +1,18 @@
+
 services:
   - type: cron
     name: casino-trends-watcher
     runtime: python
     plan: starter
-    repo: https://github.com/Dmitro995/Telegrammbotsparser.git
+    repo: https://github.com/your/repo.git
     buildCommand: "pip install -r requirements.txt"
     startCommand: "python trends_parser.py"
     schedule: "@hourly"
 
   - type: web
-    name: casino-trends-bot
+    name: telegramm-bot
     runtime: python
-    plan: free
+    plan: starter
+    repo: https://github.com/your/repo.git
     buildCommand: "pip install -r requirements.txt"
     startCommand: "python bot.py"

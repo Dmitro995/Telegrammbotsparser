@@ -1,3 +1,4 @@
+
 import logging
 from telegram.ext import Updater, CommandHandler
 from trends_parser import run_parser
@@ -15,7 +16,7 @@ def check(update, context):
     update.message.reply_text("🔍 Checking for new trends...")
     new_items = run_parser()
     if new_items:
-        message = "🎰 New Casino Trends:\n" + "\n".join(f"- {item}" for item in new_items)
+        message = "🎰 New Casino Trends:\n\n" + "\n".join(f"- {item}" for item in new_items)
     else:
         message = "No new trends found."
     update.message.reply_text(message)
@@ -27,5 +28,5 @@ def main():
     updater.start_polling()
     updater.idle()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
