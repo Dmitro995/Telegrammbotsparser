@@ -1,4 +1,4 @@
-
+import os
 from flask import Flask, request
 from telegram import Update, Bot
 from telegram.ext import Dispatcher, CommandHandler
@@ -25,7 +25,7 @@ def check(update, context):
 
 dispatcher.add_handler(CommandHandler("check", check))
 
-@app.route("/7543116655:AAE1nd4PfNQGLSCloQDBkqy40-DWBI_8mU4", methods=["POST"])
+@app.route("/" + TOKEN, methods=["POST"])
 def webhook():
     update = Update.de_json(request.get_json(force=True), bot)
     dispatcher.process_update(update)
@@ -36,6 +36,5 @@ def index():
     return "Bot is running via webhook."
 
 if __name__ == "__main__":
-    bot.delete_webhook()
     bot.set_webhook(WEBHOOK_URL)
     app.run(host="0.0.0.0", port=5000)
