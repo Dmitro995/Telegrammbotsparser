@@ -1,44 +1,50 @@
 from pytrends.request import TrendReq
-import random, time
+import random
+import time
+import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-import requests
 
 def run_parser():
-    # Настраиваем сессию с ретраями
-    session = requests.Session()
-    retries = Retry(total=3, backoff_factor=0.3, allowed_methods=["GET", "POST"])
-    adapter = HTTPAdapter(max_retries=retries)
-    session.mount("https://", adapter)
-    session.mount("http://", adapter)
-
-    pytrends = TrendReq(
-        hl='en-US',
-        tz=330,
-        requests_args={
-            'headers': {'User-Agent': 'Mozilla/5.0'}
-        },
-        requests_session=session
+    # Настраиваем HTTP-сессию с ретраями
+    requests_session = requests.Session()
+    retry_strategy = Retry(
+        total=3,
+        backoff_factor=0.3,
+        allowed_methods=["GET", "POST"]
     )
+    adapter = HTTPAdapter(max_retries=retry_strategy)
+    requests_session.mount("https://", adapter)
+    requests_session.mount("http://", adapter)
 
-    time.sleep(random.uniform(2, 5))  # Anti-ban delay
+    try:
+        pytrends = TrendReq(
+            hl="en-US",
+            tz=330,
+            requests_args={"headers": {"User-Agent": "Mozilla/5.0"}},
+            requests_session=requests_session
+        )
 
-    keywords = [
-        "online casino", "casino app india", "teen patti",
-        "real money game", "slot games"
-    ]
-    pytrends.build_payload(keywords, geo='IN', timeframe='now 7-d')
+        # Анти‑бан-задержка
+        time.sleep(random.uniform(2, 5))
 
-    data = pytrends.related_queries()
-    results = []
+        keywords = [
+            "online casino", "casino app india", "teen patti",
+            "real money game", "slot games"
+        ]
+        pytrends.build_payload(keywords, geo="IN", timeframe="now 7-d")
+        data = pytrends.related_queries()
 
-    for kw, queries in data.items():
-        if queries['rising'] is not None:
-            trends = queries['rising']['query'].tolist()
-            results.extend(trends)
+        results = []
+        for kw, queries in data.items():
+            if isinstance(queries, dict) and queries.get("rising") is not None:
+                trends = queries["rising"]["query"].tolist()
+                results.extend(trends)
 
-    results = list(set(results))
-    if len(results) > 10:
-        results = results[:10]
+        # Уникальные и максимум 10
+        results = list(dict.fromkeys(results))[:10]
+        return results
 
-    return results
+    except Exception as e:
+        # тут можно залогировать e, например print(e) или в файл
+        return []
