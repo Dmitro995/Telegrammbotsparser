@@ -1,5 +1,6 @@
-from pytrends.request import TrendReq
+
 import random, time
+from pytrends.request import TrendReq
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 import requests
@@ -14,7 +15,9 @@ def run_parser():
     pytrends = TrendReq(
         hl='en-US',
         tz=330,
-        requests_args={'headers': {'User-Agent': 'Mozilla/5.0'}},
+        requests_args={
+            'headers': {'User-Agent': 'Mozilla/5.0'}
+        },
         requests_session=session
     )
 
@@ -35,7 +38,4 @@ def run_parser():
             results.extend(trends)
 
     results = list(set(results))
-    if len(results) > 10:
-        results = results[:10]
-
-    return results
+    return results[:10] if len(results) > 10 else results

@@ -1,11 +1,11 @@
-import os
+
 from flask import Flask, request
 from telegram import Update, Bot
 from telegram.ext import Dispatcher, CommandHandler
 from trends_parser import run_parser
 
-TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
-WEBHOOK_URL = os.environ.get("APP_URL") + f"/{TOKEN}"
+TOKEN = "7543116655:AAE1nd4PfNQGLSCloQDBkqy40-DWBI_8mU4"
+WEBHOOK_URL = "https://telegrammbotsparser.onrender.com/" + TOKEN
 
 bot = Bot(token=TOKEN)
 app = Flask(__name__)
@@ -25,7 +25,7 @@ def check(update, context):
 
 dispatcher.add_handler(CommandHandler("check", check))
 
-@app.route(f"/{TOKEN}", methods=["POST"])
+@app.route("/" + TOKEN, methods=["POST"])
 def webhook():
     update = Update.de_json(request.get_json(force=True), bot)
     dispatcher.process_update(update)
@@ -36,6 +36,6 @@ def index():
     return "Bot is running via webhook."
 
 if __name__ == "__main__":
+    bot.delete_webhook()
     bot.set_webhook(WEBHOOK_URL)
-    port = int(os.environ.get("PORT", 5000))  # ✅ важно для Render
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=5000)
