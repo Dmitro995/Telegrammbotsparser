@@ -5,7 +5,7 @@ from telegram.ext import Dispatcher, CommandHandler
 from trends_parser import run_parser
 
 TOKEN = "7543116655:AAE1nd4PfNQGLSCloQDBkqy40-DWBI_8mU4"
-WEBHOOK_URL = "https://telegrammbotsparser.onrender.com/" + TOKEN
+WEBHOOK_URL = f"https://telegrammbotsparser.onrender.com/{TOKEN}"
 
 bot = Bot(token=TOKEN)
 app = Flask(__name__)
