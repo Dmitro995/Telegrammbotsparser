@@ -25,7 +25,7 @@ def check(update, context):
 
 dispatcher.add_handler(CommandHandler("check", check))
 
-@app.route("/" + TOKEN, methods=["POST"])
+@app.route("/7543116655:AAE1nd4PfNQGLSCloQDBkqy40-DWBI_8mU4", methods=["POST"])
 def webhook():
     update = Update.de_json(request.get_json(force=True), bot)
     dispatcher.process_update(update)
