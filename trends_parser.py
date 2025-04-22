@@ -6,27 +6,26 @@ from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 def run_parser():
-    # Настраиваем HTTP-сессию с ретраями
-    requests_session = requests.Session()
+    # Configure session with retries
+    session = requests.Session()
     retry_strategy = Retry(
         total=3,
         backoff_factor=0.3,
         allowed_methods=["GET", "POST"]
     )
     adapter = HTTPAdapter(max_retries=retry_strategy)
-    requests_session.mount("https://", adapter)
-    requests_session.mount("http://", adapter)
+    session.mount("https://", adapter)
+    session.mount("http://", adapter)
 
     try:
         pytrends = TrendReq(
             hl="en-US",
             tz=330,
             requests_args={"headers": {"User-Agent": "Mozilla/5.0"}},
-            requests_session=requests_session
+            requests_session=session
         )
 
-        # Анти‑бан-задержка
-        time.sleep(random.uniform(2, 5))
+        time.sleep(random.uniform(2, 5))  # Anti-ban delay
 
         keywords = [
             "online casino", "casino app india", "teen patti",
@@ -41,10 +40,8 @@ def run_parser():
                 trends = queries["rising"]["query"].tolist()
                 results.extend(trends)
 
-        # Уникальные и максимум 10
-        results = list(dict.fromkeys(results))[:10]
-        return results
-
-    except Exception as e:
-        # тут можно залогировать e, например print(e) или в файл
+        # Preserve first occurrence order and limit to 10
+        unique = list(dict.fromkeys(results))
+        return unique[:10]
+    except Exception:
         return []
