@@ -11,10 +11,6 @@ bot = Bot(token=TOKEN)
 app = Flask(__name__)
 dispatcher = Dispatcher(bot=bot, update_queue=None, workers=1, use_context=True)
 
-# Устанавливаем webhook при старте
-bot.delete_webhook()
-bot.set_webhook(WEBHOOK_URL)
-
 def check(update, context):
     update.message.reply_text("🔍 Checking for new trends...")
     try:
@@ -38,3 +34,8 @@ def webhook():
 @app.route("/", methods=["GET"])
 def index():
     return "Bot is running via webhook."
+
+if __name__ == "__main__":
+    bot.set_webhook(WEBHOOK_URL)
+    port = int(os.environ.get("PORT", 5000))  # ✅ важно для Render
+    app.run(host="0.0.0.0", port=port)
