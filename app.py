@@ -1,50 +1,40 @@
 import os
-import logging
-import random
-import time
-
 from flask import Flask, request
-from telegram import Bot, Update
-from telegram.ext import Dispatcher, CommandHandler, CallbackContext
-
+from telegram import Update, Bot
+from telegram.ext import Dispatcher, CommandHandler
 from trends_parser import run_parser
 
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO
-)
+TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
+WEBHOOK_URL = os.environ.get("APP_URL") + f"/{TOKEN}"
 
-TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
-APP_URL = os.environ["APP_URL"].rstrip("/")
 bot = Bot(token=TOKEN)
-
 app = Flask(__name__)
-dispatcher = Dispatcher(bot, None, use_context=True)
+dispatcher = Dispatcher(bot=bot, update_queue=None, workers=1, use_context=True)
 
-def check(update: Update, context: CallbackContext):
-    chat_id = update.effective_chat.id
-    bot.send_message(chat_id, "🔍 Checking for new trends...")
-    new_items = run_parser()
-    if new_items:
-        text = (
-            "🎰 New Casino Trends:\n"
-            + "\n".join(f"- {item}" for item in new_items)
-        )
-    else:
-        text = "No new trends found."
-    bot.send_message(chat_id, text)
+def check(update, context):
+    update.message.reply_text("🔍 Checking for new trends...")
+    try:
+        new_items = run_parser()
+        if new_items:
+            message = "🆕 New Casino Trends:\n\n" + "\n".join(f"- {item}" for item in new_items)
+        else:
+            message = "No new trends found."
+    except Exception as e:
+        message = f"Error: {str(e)}"
+    update.message.reply_text(message)
 
 dispatcher.add_handler(CommandHandler("check", check))
 
-@app.route(f"/webhook/{TOKEN}", methods=["POST"])
+@app.route(f"/{TOKEN}", methods=["POST"])
 def webhook():
-    data = request.get_json(force=True)
-    update = Update.de_json(data, bot)
+    update = Update.de_json(request.get_json(force=True), bot)
     dispatcher.process_update(update)
-    return "OK"
+    return "ok"
+
+@app.route("/", methods=["GET"])
+def index():
+    return "Bot is running via webhook."
 
 if __name__ == "__main__":
-    webhook_url = f"{APP_URL}/webhook/{TOKEN}"
-    bot.set_webhook(webhook_url)
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    bot.set_webhook(WEBHOOK_URL)
+    app.run(host="0.0.0.0", port=5000)
